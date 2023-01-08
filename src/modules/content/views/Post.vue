@@ -130,9 +130,21 @@
                 dense
                 @update:model-value="updateTags"
                 @input-value="value => tagFilter = value"
+                @keyup.enter="createTag"
               >
                 <template v-slot:append v-if="tagFilter">
-                  <q-icon name="add_circle" color="primary" @click="createTag" style="cursor: pointer" />
+                  <q-icon
+                    v-if="tagExactMatchAdded"
+                    name="check_circle"
+                    color="secondary"
+                  />
+                  <q-icon
+                    v-else
+                    name="add_circle"
+                    color="primary"
+                    style="cursor: pointer"
+                    @click="createTag"
+                  />
                 </template>
               </q-select>
               <div v-if="!tagGroups.selected.length" class="q-px-sm q-pt-sm">
@@ -206,6 +218,11 @@ export default {
       return this.tags
         .find(tag => tag.data.title.toLowerCase() === (this.tagFilter ?? "").toLowerCase())
     },
+    tagExactMatchAdded () {
+      return this.post.data.taxonomies.tags.includes(
+        this.tagExactMatch?.document?.id
+      )
+    },
     categoryExactMatch () {
       return this.categories
         .find(category => category.data.title.toLowerCase() === (this.categoryFilter ?? "").toLowerCase())
@@ -268,8 +285,9 @@ export default {
       await taxonomyApi.createTaxonomy("category", data)
       await this.fetchCategories()
     },
-    async createTag () {
+    async createTag (е) {
       const title = this.tagFilter
+      if (!title || this.tagExactMatchAdded) return
       const tag = await taxonomyApi.createTaxonomy("tag", { title, slug: "xxx" })
       await this.fetchTags()
       console.log({ tag })

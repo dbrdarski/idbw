@@ -3,14 +3,11 @@
     <!-- lHh Lpr lFf -->
     <q-header v-show="layout.options.edit">
       <q-toolbar style="height: 60px; border-bottom: 1px solid #ccc" class="bg-white text-black" ref="header">
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+        <div class="hash-logo">
+          <router-link :to="{ name: 'dashboard' }" class="hash-logo-link">
+            <h1 class="hash-logo-typography">#</h1>
+          </router-link>
+        </div>
         <q-space />
         <div></div>
       </q-toolbar>
@@ -143,5 +140,25 @@ export default defineComponent({
     margin: 12px -8px 8px;
     padding: 0;
   }
+}
+.hash-logo {
+  display: flex;
+  background: #09f;
+  width: 60px;
+  height: 60px;
+  margin-left: -12px;
+  justify-content: center;
+  align-items: center;
+}
+.hash-logo-link {
+  text-decoration: none;
+  color: white;
+}
+.hash-logo-typography {
+  font-size: 40px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  line-height: 1;
 }
 </style>

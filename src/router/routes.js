@@ -30,6 +30,11 @@ const routes = [
         path: "categories",
         props: { type: "category", key: "category", title: "Categories" },
         component: () => import("/src/modules/taxonomy/views/Taxonomies.vue")
+      },
+      {
+        name: "dashboard",
+        path: "dashboard",
+        component: () => import("/src/pages/Dashboard.vue")
       }
     ]
   },

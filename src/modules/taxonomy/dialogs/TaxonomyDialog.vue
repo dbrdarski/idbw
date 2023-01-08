@@ -27,7 +27,7 @@
           autofocus
           filled
           dense
-          style="min-width: 250px"
+          style="min-width: 280px"
           :width="300"
         />
       </q-card-section>
