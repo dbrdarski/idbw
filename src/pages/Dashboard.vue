@@ -1,5 +1,5 @@
 <template>
-  <PageLayout :edit="false">
+  <PageLayout>
     Da da da
   </PageLayout>
 </template>

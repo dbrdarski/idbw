@@ -36,7 +36,7 @@ async function init() {
         }
         return class Post {
           header = TaxonomyHead
-          body = Array(Vdom)
+          body = Array(window.$or(Vdom, String)) // Array(Vdom | String)
           taxonomies = Taxonomies
         }
       },

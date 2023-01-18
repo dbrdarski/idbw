@@ -9,14 +9,7 @@ export function fetchEntries (type, { offset, limit, where } = {}) {
       .find(where)
       .skip(offset)
       .limit(limit)
-      .data(({
-        data,
-        document,
-        ...rest
-      }) => ({
-        ...document,
-        data
-      }))
+      .data()
     ]
   )
 }
@@ -30,5 +23,17 @@ export function updateEntry (type, { document: { id }, data, revision: { id: fro
 }
 
 export function fetchEntry (type, id) {
-  return window.$.query($ => $[type].getActiveRevision(id))
+  return window.$.query($ => $[type].getLatestRevision(id))
+}
+
+export function fetchRevision (type, id) {
+  return window.$.query($ => $[type].getRevision(id))
+}
+
+export function fetchEntryRevisions (type, id) {
+  return window.$.query($ =>
+    $[type]
+      .getRevisions(id)
+      .data(({ document, data, ...rest }) => rest)
+  )
 }

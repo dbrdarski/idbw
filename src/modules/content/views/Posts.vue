@@ -8,6 +8,8 @@
           <q-separator />
           <q-btn label="Active" outline color="blue-7" />
           <q-separator />
+          <!-- <q-btn label="Drafts" outline color="blue-7" /> -->
+          <q-separator />
           <q-btn label="Archived" outline color="blue-7" />
         </q-btn-group>
         <q-space />
@@ -51,9 +53,9 @@ import { getOffsetAndLimit } from "/src/common/mixins/pagination.js"
 import * as api from "../api"
 
 const columns = [
-  { name: "title", label: "Title", field: row => row.data.title, width: "40%", align: "left"  },
+  { name: "title", label: "Title", field: row => row.data.header.title, width: "40%", align: "left" },
   // { name: "status", label: "Status", field: "title" },
-  { name: "slug", label: "Slug",  field: row => row.data.slug, align: "left"  },
+  { name: "slug", label: "Slug",  field: row => row.data.header.slug, align: "left"  },
   { name: "actions", label: "Actions",  field: "actions", align: "right" },
 ]
 

@@ -17,7 +17,9 @@
       class="side-panel column"
       :width="250"
     >
-      <h1 class="logo">#</h1>
+      <router-link :to="{ name: 'dashboard' }" class="hash-logo-link">
+        <h1 class="logo">#</h1>
+      </router-link>
       <q-space />
       <q-list class="q-py-lg q-px-lg" dense>
         <q-item-label
@@ -160,5 +162,8 @@ export default defineComponent({
   text-align: center;
   margin: 0;
   line-height: 1;
+  height: 60px;
+  width: 60px;
+  line-height: 60px;
 }
 </style>

@@ -9,11 +9,18 @@
     />
     <template v-slot:header>
       <q-btn label="Save draft" style="margin-right: 10px;" unelevated outline color="primary" />
-      <q-btn label="Publish" unelevated filled color="primary" />
+      <q-btn label="Publish" unelevated filled color="primary" @click="publishPost" />
     </template>
     <div class="row">
-      <div class="content">
-        <h1>Edit post</h1>
+      <div
+        class="content"
+        ref="contentEditor"
+        contenteditable
+      >
+
+        <!-- <node-list
+          :items="post.data.body"
+        /> -->
       </div>
       <div class="sidebar">
         <q-list>
@@ -42,6 +49,90 @@
                     </q-item-section>
                   </q-item>
                 </q-list>
+              </q-card-section>
+            </q-card>
+          </q-expansion-item>
+          <q-separator />
+          <q-expansion-item
+            v-if="id"
+            header-class="sidebar-section-title"
+            label="Revisions"
+            default-opened
+          >
+            <q-card>
+              <q-card-section class="q-pa-none">
+                <!-- Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quidem, eius reprehenderit eos corrupti. -->
+                <q-list
+                  class="p-ma-none q-pa-none"
+                  :padding="false"
+                  style="max-height: 147px; overflow-y: auto; padding: 0 !important"
+                >
+                  <template
+                    v-for="r in formatedRevisions"
+                    :key="r.id"
+                  >
+                    <q-item
+                      :active="r.active"
+                      clickable
+                      ripple
+                    >
+                      <q-item-section>
+                        <q-item-label
+                          class="text-caption"
+                        >
+                          {{ r.date }}
+                        </q-item-label>
+                        <q-item-label caption>by {{ r.user }}</q-item-label>
+                      </q-item-section>
+                      <q-item-section avatar style="min-width: 0; margin: 0; padding: 0">
+                        <q-btn
+                          unelevated
+                          round
+                          size="sm"
+                          @click="() => {}"
+                          :class="r.active ? 'text-primary' : 'text-grey-8'"
+                        >
+                          <q-icon
+                            size="sm"
+                            name="difference"
+                          >
+                            <q-tooltip self="bottom start" anchor="center left">
+                              Compare with current
+                            </q-tooltip>
+                          </q-icon>
+                        </q-btn>
+                      </q-item-section>
+                      <q-item-section avatar class="q-pa-none q-ma-none" style="min-width: 0; margin: 0; padding: 0">
+                        <q-btn
+                          unelevated
+                          round
+                          size="sm"
+                          :class="r.active ? 'text-primary' : 'text-grey-8'"
+                          @click="openRevision(r)"
+                        >
+                          <q-icon
+                            size="sm"
+                            name="update"
+                          >
+                            <q-tooltip self="bottom start" anchor="center left">
+                              Load revision
+                            </q-tooltip>
+                          </q-icon>
+                        </q-btn>
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-list>
+                <!-- <div class="row">
+                  <q-btn
+                    label="Compare revisions"
+                    class="q-ma-md"
+                    color="grey-8"
+                    style="flex-grow: 1"
+                    outline
+                    dense
+                  />
+                </div> -->
               </q-card-section>
             </q-card>
           </q-expansion-item>
@@ -164,18 +255,6 @@
             </q-card-section>
           </q-card>
           </q-expansion-item>
-          <q-separator />
-          <q-expansion-item
-            header-class="sidebar-section-title"
-            label="Revisions"
-            default-opened
-          >
-            <q-card>
-              <q-card-section>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quidem, eius reprehenderit eos corrupti.
-              </q-card-section>
-            </q-card>
-          </q-expansion-item>
         </q-list>
       </div>
     </div>
@@ -184,12 +263,28 @@
 
 <script>
 import * as taxonomyApi from "../../taxonomy/api.js"
+import { createEntry, fetchEntry, updateEntry, fetchEntryRevisions, fetchRevision } from "/src/modules/content/api.js"
 import TaxonomyDialog from "../../taxonomy/dialogs/TaxonomyDialog.vue"
+// import { NodeList } from "src/common/components/Renderer.js"
+
+import { render, getVNodeTree } from "idbx/src/utils"
+import { date } from "quasar"
 
 export default {
   name: "EditPost",
   components: {
-    TaxonomyDialog
+    TaxonomyDialog,
+    // NodeList
+  },
+  props: {
+    id: {
+      type: String,
+      default: null
+    },
+    revisionId: {
+      type: String,
+      default: null
+    }
   },
   data () {
     return {
@@ -199,13 +294,18 @@ export default {
             title: "",
             slug: ""
           },
-          body: [],
+          body: [{
+            tag: "h4",
+            attrs: {},
+            children: ["Insert post title"]
+          }],
           taxonomies: {
             tags: [],
             categories: []
           }
         }
       },
+      revisions: [],
       tags: [],
       categories: [],
       tagFilter: "",
@@ -214,6 +314,20 @@ export default {
     }
   },
   computed: {
+    formatedRevisions () {
+      return this.revisions.map(({
+        meta: { timestamp, user },
+        revision: {
+          id,
+          published
+        },
+      }) => ({
+        id,
+        date: date.formatDate(timestamp, "DD/MM/YYYY HH:mm"),
+        user,
+        active: this.post.revision.id === id
+      })).reverse()
+    },
     tagExactMatch () {
       return this.tags
         .find(tag => tag.data.title.toLowerCase() === (this.tagFilter ?? "").toLowerCase())
@@ -261,6 +375,49 @@ export default {
     }
   },
   methods: {
+    createPost () {
+      const {
+        header,
+        body,
+        taxonomies
+      } = this.post.data
+
+      return createEntry("post", {
+        header,
+        body,
+        taxonomies
+      })
+    },
+    updatePost () {
+      return updateEntry("post", this.post)
+    },
+    async publishPost () {
+      const { children } = getVNodeTree(this.$refs.contentEditor)
+
+      this.post.data.body = children
+      this.post.data.header.title = "Post title"
+      this.post.data.header.slug = "post-slug"
+
+      const post = await this.id ? this.updatePost() : this.createPost()
+      console.log({ post })
+
+      this.$router.replace({
+        name: "edit-post-revision",
+        params: {
+          id: post.document.id,
+          revisionId: post.revision.id
+        }
+      })
+    },
+    openRevision ({ id }) {
+      this.$router.push({
+        name: "edit-post-revision",
+        params: {
+          id: this.id,
+          revisionId: id
+        }
+      })
+    },
     tagLabel (tag) {
       return tag?.data?.title
     },
@@ -273,6 +430,23 @@ export default {
     removeTag (tag) {
       this.post.data.taxonomies.tags = this.post.data.taxonomies.tags.filter(id => id !== tag.document.id)
     },
+    fetchData () {
+      this.fetchPost(this.id),
+      this.fetchRevisions(this.id)
+    },
+    async fetchRevision (revisionId) {
+      this.post = JSON.parse(
+        JSON.stringify(
+          await fetchRevision("post", revisionId)
+        )
+      )
+      this.renderPost()
+      this.fetchRevisions(this.id)
+    },
+    async fetchRevisions (id) {
+      const revisions = await fetchEntryRevisions("post", id)
+      this.revisions = revisions
+    },
     async fetchCategories () {
       const [_, categories] = await taxonomyApi.fetchTaxonomies("category")
       this.categories = categories
@@ -280,6 +454,22 @@ export default {
     async fetchTags () {
       const [_, tags] = await taxonomyApi.fetchTaxonomies("tag")
       this.tags = tags
+    },
+    async fetchPost (id) {
+      this.post = JSON.parse(
+        JSON.stringify(
+          await fetchEntry("post", id)
+        )
+      )
+      this.renderPost()
+    },
+    renderPost () {
+      if (this.post.data.body) {
+        const { contentEditor } = this.$refs
+        const renderChild =  render.bind(null, contentEditor)
+        contentEditor.innerHTML = ""
+        this.post.data.body.forEach(renderChild)
+      }
     },
     async saveTaxonomy (data) {
       await taxonomyApi.createTaxonomy("category", data)
@@ -290,13 +480,23 @@ export default {
       if (!title || this.tagExactMatchAdded) return
       const tag = await taxonomyApi.createTaxonomy("tag", { title, slug: "xxx" })
       await this.fetchTags()
-      console.log({ tag })
       this.updateTags(tag)
+    }
+  },
+  watch: {
+    id (id) {
+      this.fetchData()
+    },
+    revisionId (id) {
+      this.fetchRevision(id)
     }
   },
   mounted () {
     this.fetchCategories()
     this.fetchTags()
+    this.id
+      ? this.fetchData()
+      : this.renderPost()
   }
 }
 </script>
@@ -304,21 +504,23 @@ export default {
 <style scoped>
 .content {
   flex-grow: 1;
-  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
   overflow-y: auto;
+  max-width: calc(100vw - 300px);
+  padding: 32px 48px;
 }
 .sidebar {
   width: 300px;
   border-left: 1px solid #ccc;
-  min-height: calc(100vh - 60px);
+  height: calc(100vh - 60px);
   overflow-y: auto;
 }
 
->>> .sidebar-section-title {
+::deep .sidebar-section-title {
   color: rgba(0,0,0,.6);
 }
 
->>> .tag-filter .q-field__append > .q-select__dropdown-icon{
+::deep .tag-filter .q-field__append > .q-select__dropdown-icon{
   display: none;
 }
 </style>
