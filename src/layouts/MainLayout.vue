@@ -16,6 +16,7 @@
       :model-value="!layout.options.edit"
       class="side-panel column"
       :width="250"
+      :overlay="false"
     >
       <router-link :to="{ name: 'dashboard' }" class="hash-logo-link">
         <h1 class="logo">#</h1>
@@ -70,7 +71,6 @@
         </q-item>
       </q-list>
     </q-drawer>
-
     <q-page-container>
       <router-view />
     </q-page-container>
