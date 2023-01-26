@@ -38,6 +38,7 @@ async function init() {
           header = TaxonomyHead
           body = Array(window.$or(Vdom, String)) // Array(Vdom | String)
           taxonomies = Taxonomies
+          options = Object
         }
       },
       page () {

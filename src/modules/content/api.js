@@ -37,3 +37,8 @@ export function fetchEntryRevisions (type, id) {
       .data(({ document, data, ...rest }) => rest)
   )
 }
+
+// open questions:
+// Tightly coupled query where existing .data(). ids(), additionally meta() should be used to build the response
+// - OR -
+// A more open approach like the one I have right now.

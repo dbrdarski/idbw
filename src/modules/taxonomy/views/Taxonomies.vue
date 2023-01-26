@@ -54,9 +54,12 @@
 </template>
 
 <script>
+import { format } from "quasar"
 import { getOffsetAndLimit } from "/src/common/mixins/pagination.js"
 import * as api from "../api"
 import TaxonomyDialog from "../dialogs/TaxonomyDialog.vue"
+
+const { capitalize } = format
 
 const columns = [
   { name: "title", label: "Title", field: row => row.data.title, width: "40%", align: "left"  },
@@ -115,12 +118,24 @@ export default {
       this.taxonomies = taxonomies
     },
     async saveTaxonomy (data) {
-      await this.editedItem ?
-        api.updateTaxonomy(this.type, {
-          ...this.editedItem,
-          data
-        }) :
-        api.createTaxonomy(this.type, data)
+      await (
+        this.editedItem
+          ? api.updateTaxonomy(
+            this.type,
+            { ...this.editedItem, data }
+          )
+          : api.createTaxonomy(
+            this.type, data
+          )
+      )
+      this.$q.notify({
+        type: "positive",
+        message: `${capitalize(this.type)} was successfully ${
+          this.editedItem
+            ? "updated"
+            : "created"
+        }.`
+      })
       await this.fetchTaxonomies()
     }
   },
