@@ -1,22 +1,21 @@
-export default template => render =>
+import { h } from 'vue'
+
+let count = 0
+
+export default template => Renderer =>
   template({
-    name: 'page',
-    label: 'Default page'
+    name: 'page' + (++count),
+    label: 'Default page' + count
   })({
     components: {
-      render
+      Renderer
     },
     props: ['data'],
     render () {
-      return (
-        <div>
-          <h4>
-            <render :data="data.header.title" />
-          </h4>
-          <div>
-            <render :data="data.body" />
-          </div>
-        </div>
+      return h('div', {}, [
+          h(Renderer, { tag: "h3", children: [ "Insert title" ] }),
+          h(Renderer, { tag: "div", children: this.data.body }),
+        ]
       )
     }
   })

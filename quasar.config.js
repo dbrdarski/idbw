@@ -8,6 +8,7 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
+// const vueJsx = require('@vitejs/plugin-vue-jsx')
 
 const { configure } = require('quasar/wrappers');
 const path = require('path');
@@ -81,6 +82,8 @@ module.exports = configure(function (/* ctx */) {
       // viteVuePluginOptions: {},
 
       vitePlugins: [
+        // vueJsx({}),
+        // ['@vitejs/plugin-vue-jsx', {}],
         ['@intlify/vite-plugin-vue-i18n', {
           // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
           // compositionOnly: false,

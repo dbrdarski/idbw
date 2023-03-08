@@ -12,16 +12,15 @@
       <q-btn label="Publish" unelevated filled color="primary" @click="publishPost" />
     </template>
     <div class="row">
-      <div
+      <div class="content">
+        <component :is="selectedTemplateComponent" :data="post.data" />
+      </div>
+      <!-- <div
         class="content"
         ref="contentEditor"
         contenteditable
       >
-
-        <!-- <node-list
-          :items="post.data.body"
-        /> -->
-      </div>
+      </div> -->
       <div class="sidebar">
         <q-list>
           <q-expansion-item
@@ -144,13 +143,17 @@
                     </q-item-section>
                     <q-item-section class="q-pa-none" dense>
                       <q-select
-                        model-value="Template 1"
+                        v-model="post.data.options.template"
                         class="input-transparent"
                         dense
                         outlined
                         hide-bottom-space
                         stack-label
-                        :options="['Template 1', 'Template 2']"
+                        :options="templateOptions"
+                        option-value="name"
+                        option-label="label"
+                        emit-value
+                        :display-value="selectedTemplateLabel"
                       />
                     </q-item-section>
                   </q-item>
@@ -372,6 +375,7 @@ import * as taxonomyApi from "../../taxonomy/api.js"
 import { createEntry, fetchEntry, updateEntry, fetchEntryRevisions, fetchRevision } from "/src/modules/content/api.js"
 import TaxonomyDialog from "../../taxonomy/dialogs/TaxonomyDialog.vue"
 // import { NodeList } from "src/common/components/Renderer.js"
+import { themes } from "src/framework/theme.js"
 
 import { render, getVNodeTree } from "idbx/src/utils"
 import { date } from "quasar"
@@ -380,6 +384,7 @@ export default {
   name: "EditPost",
   components: {
     TaxonomyDialog,
+    ...themes.default.templates.editor.components
     // NodeList
   },
   props: {
@@ -392,6 +397,12 @@ export default {
       default: null
     }
   },
+  setup () {
+    return {
+      templateOptions: Object.values(themes.default.templates.editor.options),
+      templates: themes.default.templates.editor
+    }
+  },
   data () {
     return {
       post: {
@@ -400,17 +411,14 @@ export default {
             title: "",
             slug: ""
           },
-          body: [{
-            tag: "h4",
-            attrs: {},
-            children: ["Insert post title"]
-          }],
-          options: {
-            visibility: "public"
-          },
+          body: [],
           taxonomies: {
             tags: [],
             categories: []
+          },
+          options: {
+            template: themes.default.templates.editor.options.page1.name,
+            visibility: "public"
           }
         }
       },
@@ -423,6 +431,12 @@ export default {
     }
   },
   computed: {
+    selectedTemplateComponent () {
+      return this.templates.components[this.post.data.options.template]
+    },
+    selectedTemplateLabel () {
+      return this.templates.options[this.post.data.options.template]?.label
+    },
     formatedRevisions () {
       return this.revisions.map(({
         meta: { timestamp, user },
@@ -488,13 +502,15 @@ export default {
       const {
         header,
         body,
-        taxonomies
+        taxonomies,
+        options
       } = this.post.data
 
       const result = createEntry("post", {
         header,
         body,
-        taxonomies
+        taxonomies,
+        options
       })
 
       this.$q.notify({
@@ -510,11 +526,13 @@ export default {
         type: "positive",
         message: `Post was successfully updated.`
       })
-      console.log(result)
+      // console.log(result)
       return result
     },
     async publishPost () {
-      const { children } = getVNodeTree(this.$refs.contentEditor)
+      alert("Temporary disabled!")
+      return 
+      // const { children } = getVNodeTree(this.$refs.contentEditor)
 
       this.post.data.body = children
       this.post.data.header.title = "Post title"
@@ -523,7 +541,7 @@ export default {
       const post = await (
         this.id ? this.updatePost() : this.createPost()
       )
-      console.log({ post })
+      // console.log({ post })
       this.$router.replace({
         name: "edit-post-revision",
         params: {
@@ -587,12 +605,12 @@ export default {
       this.renderPost()
     },
     renderPost () {
-      if (this.post.data.body) {
-        const { contentEditor } = this.$refs
-        const renderChild =  render.bind(null, contentEditor)
-        contentEditor.innerHTML = ""
-        this.post.data.body.forEach(renderChild)
-      }
+      // if (this.post.data.body) {
+      //   const { contentEditor } = this.$refs
+      //   const renderChild =  render.bind(null, contentEditor)
+      //   contentEditor.innerHTML = ""
+      //   this.post.data.body.forEach(renderChild)
+      // }
     },
     async saveTaxonomy (data) {
       await taxonomyApi.createTaxonomy("category", data)
