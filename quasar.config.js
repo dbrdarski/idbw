@@ -8,6 +8,7 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
+// const vueJsx = require('@vitejs/plugin-vue-jsx')
 
 const { configure } = require('quasar/wrappers');
 const path = require('path');
@@ -81,6 +82,8 @@ module.exports = configure(function (/* ctx */) {
       // viteVuePluginOptions: {},
 
       vitePlugins: [
+        // vueJsx({}),
+        // ['@vitejs/plugin-vue-jsx', {}],
         ['@intlify/vite-plugin-vue-i18n', {
           // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
           // compositionOnly: false,
@@ -94,6 +97,7 @@ module.exports = configure(function (/* ctx */) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
       // https: true
+      port: 3000,
       open: true // opens browser window automatically
     },
 
@@ -112,7 +116,9 @@ module.exports = configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: [
+        'Notify'
+      ]
     },
 
     // animations: 'all', // --- includes all animations

@@ -47,7 +47,7 @@ async function init() {
         }
       },
       category ({ post }) {
-        this.publish = true
+        this.publish = true // TODO: this needs to be implemented
         this.hasMany({
           post
         }, "category")

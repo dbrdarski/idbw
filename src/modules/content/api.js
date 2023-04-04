@@ -14,6 +14,38 @@ export function fetchEntries (type, { offset, limit, where } = {}) {
   )
 }
 
+export function fetchEntriesAlt (type, { offset, limit, where } = {}) {
+  return window.$.query($ => $[type]
+    .activeRevisions()
+    .find(where)
+    .skip(offset)
+    .limit(limit)
+    .meta({
+      total: $[type]
+        .activeRevisions()
+        .find(where)
+        .count()
+    })
+    .include("tag", "category")
+    .data2()
+  )
+}
+
+export function fetchEntriesAlt2 (type, { offset, limit, where } = {}) {
+  return window.$.query($ => {
+    const baseQuery = $[type]
+      .activeRevisions()
+      .find(where)
+    return baseQuery
+      .skip(offset)
+      .limit(limit)
+      .meta({
+        total: baseQuery.count()
+      })
+      .data2()
+  })
+}
+
 export function createEntry (type, payload) {
   return window.$.query($ => $[type].createDocument(payload))
 }
@@ -23,6 +55,7 @@ export function updateEntry (type, { document: { id }, data, revision: { id: fro
 }
 
 export function fetchEntry (type, id) {
+  console.log("fetchEntry", type, id)
   return window.$.query($ => $[type].getLatestRevision(id))
 }
 

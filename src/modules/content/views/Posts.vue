@@ -99,7 +99,8 @@ export default {
       await this.fetchEntries({ pagination })
     },
     async fetchEntries ({ pagination = this.pagination } = {}) {
-      const [ total, taxonomies ] = await api.fetchEntries(this.type, getOffsetAndLimit(pagination))
+      // const [ total, taxonomies ] = await api.fetchEntries(this.type, getOffsetAndLimit(pagination))
+      const { meta: { total }, data: taxonomies } = await api.fetchEntriesAlt(this.type, getOffsetAndLimit(pagination))
       this.pagination.rowsNumber = total
       this.taxonomies = taxonomies
     },
