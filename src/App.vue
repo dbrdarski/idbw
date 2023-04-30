@@ -8,6 +8,7 @@ import { defineComponent } from "vue"
 import { repository } from "idbx"
 import browser from "idbx/src/adapters/browser"
 import schema from "/src/schema.mjs"
+import theme from "/themes/default"
 
 async function init () {
   const db = repository(browser)

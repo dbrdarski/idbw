@@ -12,16 +12,15 @@
       <q-btn label="Publish" unelevated filled color="primary" @click="publishPost" />
     </template>
     <div class="row">
-      <div
+      <div class="content">
+        <component :is="selectedTemplateComponent" :data="post.data" />
+      </div>
+      <!-- <div
         class="content"
         ref="contentEditor"
         contenteditable
       >
-
-        <!-- <node-list
-          :items="post.record.body"
-        /> -->
-      </div>
+      </div> -->
       <div class="sidebar">
         <q-list>
           <q-expansion-item
@@ -30,22 +29,132 @@
             default-opened
           >
             <q-card>
-              <q-card-section class="q-px-none q-py-sm">
+              <q-card-section class="q-px-none q-pt-none q-pb-sm">
                 <q-list dense class="q-pa-none">
-                  <q-item class="q-pa-none">
-                    <q-item-section class="q-pa-none" dense>
-                      URL
-                    </q-item-section>
-                    <q-item-section class="q-pa-none" dense>
-                      Okokokokok
-                    </q-item-section>
-                  </q-item>
                   <q-item>
-                    <q-item-section>
+                    <q-item-section class="input-left">
                       Visibility
                     </q-item-section>
                     <q-item-section class="q-pa-none" dense>
-                      Okokokokok
+                      <q-input
+                        :model-value="post.data.options.visibility"
+                        class="input-transparent"
+                        dense
+                        outlined
+                        hide-bottom-space
+                        stack-label
+                      >
+                        <q-popup-proxy ref="visibility_popup">
+                          <q-card style="width: 268px">
+                            <q-card-section class="text-subtitle2 row q-pt-md">
+                              <div>Visibility</div>
+                              <q-space />
+                              <!-- <q-btn round size="sm" flat> -->
+                                <q-icon
+                                  name="close"
+                                  size="16px"
+                                  style="cursor: pointer; padding: 3px 0;"
+                                  @click="() => $refs.visibility_popup.hide()"
+                                />
+                              <!-- </q-btn> -->
+                            </q-card-section>
+                            <q-card-section class="text-body2 q-pt-none">
+                              <p class="q-mb-sm">Control how this post is viewed.</p>
+                              <q-list class="text-body2 q-pt-sm">
+                                <q-item class="q-px-none">
+                                  <q-item-section avatar top style="min-width: 16px; padding-right: 10px;">
+                                    <q-radio
+                                      v-model="post.data.options.visibility"
+                                      val="public"
+                                      size="sm"
+                                      dense
+                                    />
+                                  </q-item-section>
+                                  <q-item-section>
+                                    <q-item-label>
+                                      Public
+                                    </q-item-label>
+                                    <q-item-label caption class="q-pt-none">
+                                      Visible to everyone.
+                                    </q-item-label>
+                                  </q-item-section>
+                                </q-item>
+                                <q-item class="q-px-none">
+                                  <q-item-section avatar top style="min-width: 16px; padding-right: 10px;">
+                                    <q-radio
+                                      v-model="post.data.options.visibility"
+                                      dense
+                                      size="sm"
+                                      val="private"
+                                    />
+                                  </q-item-section>
+                                  <q-item-section>
+                                    <q-item-label>
+                                      Private
+                                    </q-item-label>
+                                    <q-item-label caption class="q-pt-none">
+                                      Only visible to site admins and editors.
+                                    </q-item-label>
+                                  </q-item-section>
+                                </q-item>
+                                <q-item class="q-px-none">
+                                  <q-item-section avatar top style="min-width: 16px; padding-right: 10px;">
+                                    <q-radio
+                                      v-model="post.data.options.visibility"
+                                      dense
+                                      size="sm"
+                                      val="password"
+                                    />
+                                  </q-item-section>
+                                  <q-item-section>
+                                    <q-item-label>
+                                      Password protected
+                                    </q-item-label>
+                                    <q-item-label caption class="q-pt-none">
+                                      Only those with the password can view this post.
+                                    </q-item-label>
+                                  </q-item-section>
+                                </q-item>
+                              </q-list>
+                            </q-card-section>
+                          </q-card>
+                        </q-popup-proxy>
+                      </q-input>
+                    </q-item-section>
+                  </q-item>
+                  <q-item class="q-pa-none">
+                    <q-item-section class="q-pa-none input-left" dense>
+                      URL
+                    </q-item-section>
+                    <q-item-section class="q-pa-none" dense>
+                      <q-input
+                        model-value="Okokokokok"
+                        class="input-transparent"
+                        dense
+                        outlined
+                        hide-bottom-space
+                        stack-label
+                      />
+                    </q-item-section>
+                  </q-item>
+                  <q-item>
+                    <q-item-section class="input-left">
+                      Template
+                    </q-item-section>
+                    <q-item-section class="q-pa-none" dense>
+                      <q-select
+                        v-model="post.data.options.template"
+                        class="input-transparent"
+                        dense
+                        outlined
+                        hide-bottom-space
+                        stack-label
+                        :options="templateOptions"
+                        option-value="name"
+                        option-label="label"
+                        emit-value
+                        :display-value="selectedTemplateLabel"
+                      />
                     </q-item-section>
                   </q-item>
                 </q-list>
@@ -267,6 +376,7 @@
 
 import TaxonomyDialog from "../../taxonomy/dialogs/TaxonomyDialog.vue"
 // import { NodeList } from "src/common/components/Renderer.js"
+import { themes } from "src/framework/theme.js"
 
 import { render, getVNodeTree } from "idbx/src/utils"
 import { date } from "quasar"
@@ -279,6 +389,7 @@ export default {
   name: "EditPost",
   components: {
     TaxonomyDialog,
+    ...themes.default.templates.editor.components
     // NodeList
   },
   props: {
@@ -291,6 +402,12 @@ export default {
       default: null
     }
   },
+  setup () {
+    return {
+      templateOptions: Object.values(themes.default.templates.editor.options),
+      templates: themes.default.templates.editor
+    }
+  },
   data () {
     return {
       post: {
@@ -299,14 +416,14 @@ export default {
             title: "",
             slug: ""
           },
-          body: [{
-            tag: "h4",
-            attrs: {},
-            children: ["Insert post title"]
-          }],
+          body: [],
           taxonomies: {
             tags: [],
             categories: []
+          },
+          options: {
+            template: themes.default.templates.editor.options.page1.name,
+            visibility: "public"
           }
         }
       },
@@ -319,6 +436,12 @@ export default {
     }
   },
   computed: {
+    selectedTemplateComponent () {
+      return this.templates.components[this.post.data.options.template]
+    },
+    selectedTemplateLabel () {
+      return this.templates.options[this.post.data.options.template]?.label
+    },
     formatedRevisions () {
       return this.revisions.map(({
         revision: {
@@ -385,28 +508,46 @@ export default {
       const {
         header,
         body,
-        taxonomies
+        taxonomies,
+        options
       } = this.post.record
 
-      return contentApi.createEntry("post", {
+      const result = contentApi.createEntry("post", {
         header,
         body,
-        taxonomies
+        taxonomies,
+        options
       })
+
+      this.$q.notify({
+        type: "positive",
+        message: `Post was successfully created.`
+      })
+
+      return result
     },
-    updatePost () {
-      return contentApi.updateEntry("post", this.post)
+    async updatePost () {
+      const result = await contentApi.updateEntry("post", this.post)
+      this.$q.notify({
+        type: "positive",
+        message: `Post was successfully updated.`
+      })
+      // console.log(result)
+      return result
     },
     async publishPost () {
-      const { children } = getVNodeTree(this.$refs.contentEditor)
+      alert("Temporary disabled!")
+      return
+      // const { children } = getVNodeTree(this.$refs.contentEditor)
 
       this.post.record.body = children
       this.post.record.header.title = "Post title"
       this.post.record.header.slug = "post-slug"
 
-      const post = await this.id ? this.updatePost() : this.createPost()
-      console.log({ post })
-
+      const post = await (
+        this.id ? this.updatePost() : this.createPost()
+      )
+      // console.log({ post })
       this.$router.replace({
         name: "edit-post-revision",
         params: {
@@ -472,12 +613,12 @@ export default {
       this.renderPost()
     },
     renderPost () {
-      if (this.post.record.body) {
-        const { contentEditor } = this.$refs
-        const renderChild =  render.bind(null, contentEditor)
-        contentEditor.innerHTML = ""
-        this.post.record.body.forEach(renderChild)
-      }
+      // if (this.post.record.body) {
+      //   const { contentEditor } = this.$refs
+      //   const renderChild =  render.bind(null, contentEditor)
+      //   contentEditor.innerHTML = ""
+      //   this.post.record.body.forEach(renderChild)
+      // }
     },
     async saveTaxonomy (data) {
       await taxonomyApi.createTaxonomy("category", data)
@@ -509,7 +650,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .content {
   flex-grow: 1;
   height: calc(100vh - 60px);
@@ -531,4 +672,30 @@ export default {
 ::deep .tag-filter .q-field__append > .q-select__dropdown-icon{
   display: none;
 }
+
+.input-left {
+  max-width: 80px;
+}
+
+.input-transparent {
+  &.q-field--filled , &.q-field--filled ::v-deep .q-field__control {
+    background: transparent !important;
+  }
+  &.q-field--outlined:not(:hover) {
+    ::v-deep .q-field__control {
+      &:before {
+        display: none;
+      }
+    }
+  }
+  &.q-field--outlined {
+    ::v-deep .q-field__control {
+      &:before {
+        opacity: .3
+      }
+    }
+  }
+}
+
+
 </style>
