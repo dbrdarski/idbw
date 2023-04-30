@@ -55,13 +55,17 @@
 
 <script>
 import { getOffsetAndLimit } from "/src/common/mixins/pagination.js"
-import * as api from "../api"
 import TaxonomyDialog from "../dialogs/TaxonomyDialog.vue"
 
+import api from "/src/api/client.js"
+console.log(api)
+
+const { taxonomy: taxonomyApi, entity: contentApi } = api
+
 const columns = [
-  { name: "title", label: "Title", field: row => row.data.title, width: "40%", align: "left"  },
+  { name: "title", label: "Title", field: row => row.record.title, width: "40%", align: "left"  },
   // { name: "status", label: "Status", field: "title" },
-  { name: "slug", label: "Slug",  field: row => row.data.slug, align: "left"  },
+  { name: "slug", label: "Slug",  field: row => row.record.slug, align: "left"  },
   { name: "actions", label: "Actions",  field: "actions", align: "right" },
 ]
 
@@ -110,17 +114,17 @@ export default {
       await this.fetchTaxonomies({ pagination })
     },
     async fetchTaxonomies ({ pagination = this.pagination } = {}) {
-      const [ total, taxonomies ] = await api.fetchTaxonomies(this.type, getOffsetAndLimit(pagination))
+      const { data: taxonomies, meta: { total } } = await taxonomyApi.fetchTaxonomies(this.type, getOffsetAndLimit(pagination))
       this.pagination.rowsNumber = total
       this.taxonomies = taxonomies
     },
     async saveTaxonomy (data) {
       await this.editedItem ?
-        api.updateTaxonomy(this.type, {
+        taxonomyApi.updateTaxonomy(this.type, {
           ...this.editedItem,
           data
         }) :
-        api.createTaxonomy(this.type, data)
+        taxonomyApi.createTaxonomy(this.type, data)
       await this.fetchTaxonomies()
     }
   },

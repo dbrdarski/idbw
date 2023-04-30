@@ -51,7 +51,6 @@
 </template>
 
 <script>
-
 const initState = () => ({
   title: "",
   slug: ""
@@ -101,8 +100,8 @@ export default {
       if (!value) {
         Object.assign(this, initState())
       } else if (this.item) {
-        this.title = this.item.data.title
-        this.slug = this.item.data.slug
+        this.title = this.item.record.title
+        this.slug = this.item.record.slug
       }
     }
   }

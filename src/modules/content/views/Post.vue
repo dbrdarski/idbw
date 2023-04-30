@@ -19,7 +19,7 @@
       >
 
         <!-- <node-list
-          :items="post.data.body"
+          :items="post.record.body"
         /> -->
       </div>
       <div class="sidebar">
@@ -169,18 +169,18 @@
                   </div>
                   <q-checkbox
                     v-if="categoryExactMatch"
-                    v-model="post.data.taxonomies.categories"
+                    v-model="post.record.taxonomies.categories"
                     :val="categoryExactMatch.document.id"
-                    :label="categoryExactMatch.data.title"
+                    :label="categoryExactMatch.record.title"
                     style="width: 100%"
                     size="xs"
                   />
                   <q-checkbox
                     v-for="category in filteredCategories"
                     :key="category.document.id"
-                    v-model="post.data.taxonomies.categories"
+                    v-model="post.record.taxonomies.categories"
                     :val="category.document.id"
-                    :label="category.data.title"
+                    :label="category.record.title"
                     style="width: 100%"
                     size="xs"
                   />
@@ -245,7 +245,7 @@
                 <q-chip
                   v-for="tag in tagGroups.selected"
                   :key="tag.document.id"
-                  :label="tag.data.title"
+                  :label="tag.record.title"
                   removable
                   @remove="removeTag(tag)"
                   size="md"
@@ -262,13 +262,18 @@
 </template>
 
 <script>
-import * as taxonomyApi from "../../taxonomy/api.js"
-import { createEntry, fetchEntry, updateEntry, fetchEntryRevisions, fetchRevision } from "/src/modules/content/api.js"
+// import * as taxonomyApi from "../../taxonomy/api.js"
+// import * as contentApi from "/src/modules/content/api.js"
+
 import TaxonomyDialog from "../../taxonomy/dialogs/TaxonomyDialog.vue"
 // import { NodeList } from "src/common/components/Renderer.js"
 
 import { render, getVNodeTree } from "idbx/src/utils"
 import { date } from "quasar"
+
+import api from "/src/api/client.js"
+
+const { taxonomy: taxonomyApi, entity: contentApi } = api
 
 export default {
   name: "EditPost",
@@ -289,7 +294,7 @@ export default {
   data () {
     return {
       post: {
-        data: {
+        record: {
           header: {
             title: "",
             slug: ""
@@ -316,10 +321,11 @@ export default {
   computed: {
     formatedRevisions () {
       return this.revisions.map(({
-        meta: { timestamp, user },
         revision: {
           id,
-          published
+          published,
+          timestamp,
+          user
         },
       }) => ({
         id,
@@ -330,23 +336,23 @@ export default {
     },
     tagExactMatch () {
       return this.tags
-        .find(tag => tag.data.title.toLowerCase() === (this.tagFilter ?? "").toLowerCase())
+        .find(tag => tag.record.title.toLowerCase() === (this.tagFilter ?? "").toLowerCase())
     },
     tagExactMatchAdded () {
-      return this.post.data.taxonomies.tags.includes(
+      return this.post.record.taxonomies.tags.includes(
         this.tagExactMatch?.document?.id
       )
     },
     categoryExactMatch () {
       return this.categories
-        .find(category => category.data.title.toLowerCase() === (this.categoryFilter ?? "").toLowerCase())
+        .find(category => category.record.title.toLowerCase() === (this.categoryFilter ?? "").toLowerCase())
     },
     filteredCategories () {
       const filter = (this.categoryFilter ?? "").toLowerCase()
       return filter
         ? this.categories
           .filter(({
-            data: { title }
+            record: { title }
           }) => title.toLowerCase() !== filter.toLowerCase() &&
             title
               .toLowerCase()
@@ -355,7 +361,7 @@ export default {
         : this.categories
     },
     tagGroups () {
-      const { tags } = this.post.data.taxonomies
+      const { tags } = this.post.record.taxonomies
       return this.tags.reduce((acc, tag) => {
         acc[tags.includes(tag.document.id) ? "selected" : "available"].push(tag)
         return acc
@@ -366,7 +372,7 @@ export default {
       return filter
         ? this.tagGroups.available
           .filter(({
-            data: { title }
+            record: { title }
           }) => title
             .toLowerCase()
             .includes(filter)
@@ -380,23 +386,23 @@ export default {
         header,
         body,
         taxonomies
-      } = this.post.data
+      } = this.post.record
 
-      return createEntry("post", {
+      return contentApi.createEntry("post", {
         header,
         body,
         taxonomies
       })
     },
     updatePost () {
-      return updateEntry("post", this.post)
+      return contentApi.updateEntry("post", this.post)
     },
     async publishPost () {
       const { children } = getVNodeTree(this.$refs.contentEditor)
 
-      this.post.data.body = children
-      this.post.data.header.title = "Post title"
-      this.post.data.header.slug = "post-slug"
+      this.post.record.body = children
+      this.post.record.header.title = "Post title"
+      this.post.record.header.slug = "post-slug"
 
       const post = await this.id ? this.updatePost() : this.createPost()
       console.log({ post })
@@ -410,7 +416,7 @@ export default {
       })
     },
     openRevision ({ id }) {
-      this.$router.push({
+      this.$router.replace({
         name: "edit-post-revision",
         params: {
           id: this.id,
@@ -419,56 +425,58 @@ export default {
       })
     },
     tagLabel (tag) {
-      return tag?.data?.title
+      return tag?.record?.title
     },
     updateTags (tag) {
       if (tag) {
-        this.post.data.taxonomies.tags.push(tag.document.id)
+        this.post.record.taxonomies.tags.push(tag.document.id)
       }
       this.$refs.tagFilter.updateInputValue("")
     },
     removeTag (tag) {
-      this.post.data.taxonomies.tags = this.post.data.taxonomies.tags.filter(id => id !== tag.document.id)
+      this.post.record.taxonomies.tags = this.post.record.taxonomies.tags.filter(id => id !== tag.document.id)
     },
     fetchData () {
       this.fetchPost(this.id),
       this.fetchRevisions(this.id)
     },
     async fetchRevision (revisionId) {
-      this.post = JSON.parse(
+      const post = JSON.parse(
         JSON.stringify(
-          await fetchRevision("post", revisionId)
+          await contentApi.fetchRevision("post", revisionId)
         )
       )
+      this.post = post
       this.renderPost()
       this.fetchRevisions(this.id)
     },
     async fetchRevisions (id) {
-      const revisions = await fetchEntryRevisions("post", id)
+      const { data: revisions } = await contentApi.fetchEntryRevisions("post", id)
       this.revisions = revisions
     },
     async fetchCategories () {
-      const [_, categories] = await taxonomyApi.fetchTaxonomies("category")
+      const { data: categories } = await taxonomyApi.fetchTaxonomies("category")
       this.categories = categories
     },
     async fetchTags () {
-      const [_, tags] = await taxonomyApi.fetchTaxonomies("tag")
+      const { data: tags } = await taxonomyApi.fetchTaxonomies("tag")
       this.tags = tags
     },
     async fetchPost (id) {
-      this.post = JSON.parse(
+      const post = JSON.parse(
         JSON.stringify(
-          await fetchEntry("post", id)
+          await contentApi.fetchEntry("post", id)
         )
       )
+      this.post = post
       this.renderPost()
     },
     renderPost () {
-      if (this.post.data.body) {
+      if (this.post.record.body) {
         const { contentEditor } = this.$refs
         const renderChild =  render.bind(null, contentEditor)
         contentEditor.innerHTML = ""
-        this.post.data.body.forEach(renderChild)
+        this.post.record.body.forEach(renderChild)
       }
     },
     async saveTaxonomy (data) {

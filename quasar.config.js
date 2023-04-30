@@ -98,6 +98,18 @@ module.exports = configure(function (/* ctx */) {
     devServer: {
       // https: true
       port: 3000,
+      // proxy: {
+      //   socket: {
+      //      target: 'ws://localhost:4000',
+      //      changeOrigin: true,
+      //      rewrite: path => path.replace(/^\/socket/, ''),
+      //      ws: true
+      //  },
+      // //  api: {
+      // //     target: 'http://localhost:4000',
+      // //     changeOrigin: true
+      // //   }
+      // },
       open: true // opens browser window automatically
     },
 

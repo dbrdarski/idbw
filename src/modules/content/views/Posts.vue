@@ -50,12 +50,13 @@
 
 <script>
 import { getOffsetAndLimit } from "/src/common/mixins/pagination.js"
-import * as api from "../api"
+import api from "/src/api/client.js"
+const { entity: contentApi } = api
 
 const columns = [
-  { name: "title", label: "Title", field: row => row.data.header.title, width: "40%", align: "left" },
+  { name: "title", label: "Title", field: row => row.record.header.title, width: "40%", align: "left" },
   // { name: "status", label: "Status", field: "title" },
-  { name: "slug", label: "Slug",  field: row => row.data.header.slug, align: "left"  },
+  { name: "slug", label: "Slug",  field: row => row.record.header.slug, align: "left"  },
   { name: "actions", label: "Actions",  field: "actions", align: "right" },
 ]
 
@@ -99,18 +100,19 @@ export default {
       await this.fetchEntries({ pagination })
     },
     async fetchEntries ({ pagination = this.pagination } = {}) {
-      // const [ total, taxonomies ] = await api.fetchEntries(this.type, getOffsetAndLimit(pagination))
-      const { meta: { total }, data: taxonomies } = await api.fetchEntriesAlt(this.type, getOffsetAndLimit(pagination))
+      // const [ total, taxonomies ] = await contentApi.fetchEntries(this.type, getOffsetAndLimit(pagination))
+      const { meta: { total }, data: taxonomies, ...rest } = await contentApi.fetchEntries(this.type, getOffsetAndLimit(pagination))
+      console.log({ rest })
       this.pagination.rowsNumber = total
       this.taxonomies = taxonomies
     },
     async saveEntry (data) {
       await this.editedItem ?
-        api.updateEntry(this.type, {
+        contentApi.updateEntry(this.type, {
           ...this.editedItem,
           data
         }) :
-        api.createEntry(this.type, data)
+        contentApi.createEntry(this.type, data)
       await this.fetchEntries()
     }
   },
