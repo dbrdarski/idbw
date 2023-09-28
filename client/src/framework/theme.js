@@ -1,4 +1,5 @@
 import Renderer from "/src/common/components/Renderer.vue"
+import EditorRenderer from "/src/common/components/EditorRenderer.vue"
 
 // export const renderTemplate = template => template(x => x)(Renderer)
 console.log(Renderer)
@@ -17,7 +18,7 @@ export const registerTemplates = (...templates) => {
     options: {},
     components: {}
   }
-  const createEditorTemplate = createTemplateType(Renderer)(editor)
+  const createEditorTemplate = createTemplateType(EditorRenderer)(editor)
   templates.forEach(createEditorTemplate)
   return {
     editor

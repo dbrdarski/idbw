@@ -8,13 +8,13 @@ import { h } from 'vue'
 //   }
 const Renderer = {
   name: "Renderer2",
-  props: ['tag', 'attrs', 'children'],
+  props: ["tag", "attrs", "children"],
   render () {
-    const { tag, attrs = {}, children = [], ...rest } = this
-    console.log("QWERTY", { tag, attrs, children, rest }, this)
+    const { tag, attrs = {}, children = [], [editorModeSymbol]: editorMode, [editorOptionsSymbol]: editorOptions, ...rest } = this
+    // console.log("QWERTY", { tag, attrs, children, rest }, this)
     return typeof node === "string"
     ? node
-    : h(tag, attrs, children.map((c, i) => { console.log({ c, type: typeof c }); return typeof c === "string" ? c : h(Renderer, { ...c, key: i }) }))
+    : h(tag, editorMode ? attrs : { ...attrs, contenteditable: true }, children.map((c, i) => { console.log({ c, type: typeof c }); return typeof c === "string" ? c : h(Renderer, { ...c, key: i }) }))
   }
 }
 // function Renderer (node) {
@@ -28,6 +28,13 @@ const Renderer = {
 //
 // Renderer.props = ['tag', 'attrs', 'children']
 export const NodeList = ({ items }) => items.map(renderNode)
+export const Editor = {
+  name: "EditorRenderer",
+  props: ["tag", "attrs", "children"],
+  render () {
+    return h(Renderer, { ...this, [editorModeSymbol]: true })
+  }
+}
 NodeList.props = ['items']
 
 export default Renderer

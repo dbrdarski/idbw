@@ -1,3 +1,4 @@
 #!/usr/bin/env zx
-$`ttab 'cd server; node index.mjs'`
-$`ttab 'cd client; quasar dev'`
+$`ttab 'cd server; node index.mjs; exit'`
+$`ttab 'cd client; quasar dev; exit'`
+$`exit`

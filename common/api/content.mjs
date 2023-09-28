@@ -1,8 +1,10 @@
-export function fetchEntries (type, { offset, limit, where } = {}) {
+export function fetchEntries(type, { offset, limit, where } = {}) {
   return globalThis.$.query($ => {
     console.log("Q", { $, type })
     return $[type]
       .activeRevisions()
+      // .get()
+      // .lastest({ published: true })
       .find(where)
       .skip(offset)
       .limit(limit)
@@ -20,26 +22,29 @@ export function fetchEntries (type, { offset, limit, where } = {}) {
   })
 }
 
-export function createEntry (type, payload) {
+export function createEntry(type, payload) {
   return globalThis.$.query($ => $[type].createDocument(payload))
 }
 
-export function updateEntry (type, { document: { id }, record, revision: { id: from }}) {
+export function updateEntry(type, { document: { id }, record, revision: { id: from } }) {
   return globalThis.$.query($ => $[type].createRevision(id, record, from))
 }
 
-export function fetchEntry (type, id) {
+export function fetchEntry(type, id) {
   return globalThis.$.query($ => $[type].getLatestRevision(id)) // this needs to be handled, does not return { data }
+  // .get({ id }).latest()
 }
 
-export function fetchRevision (type, id) {
-  return globalThis.$.query($ => $[type].getRevision(id))
+export function fetchRevision(type, id) {
+  return globalThis.$.query($ => $[type].getRevision(id)) // .get({ id, revision: true })
 }
 
-export function fetchEntryRevisions (type, id) {
+export function fetchEntryRevisions(type, id) {
   return globalThis.$.query($ =>
     $[type]
       .getRevisions(id)
+      // .get({ id })
+      // .all()
       .data(({ document, data, ...rest }) => rest)
   )
 }

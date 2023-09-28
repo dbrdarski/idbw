@@ -1,5 +1,5 @@
 <template>
-  <component :is="tag" v-bind="attrs">
+  <component :is="tag" v-bind="computedAttrs">
     <template
     v-for="(c, i) in children"
     :key="i"
@@ -13,6 +13,8 @@
   </component>
 </template>
 <script>
+import { editorModeSymbol, editorOptionsSymbol } from "../constants.js"
+
 export default {
   name: "DomRenderer",
   props: {
@@ -20,6 +22,19 @@ export default {
     attrs: Object,
     children: {
       default: []
+    },
+    [editorModeSymbol]: {
+      type: Boolean,
+      default: false
+    }
+  },
+  computed: {
+    computedAttrs () {
+      const editorMode = this[editorModeSymbol]
+      console.log({ editorMode })
+      return editorMode
+        ? { ...this.attrs, contenteditable: true }
+        : this.attrs
     }
   },
   methods: {

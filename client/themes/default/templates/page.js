@@ -1,10 +1,11 @@
 import { h } from 'vue'
 
-let count = 0
+let counter = 0
 
-export default template => Renderer =>
-  template({
-    name: 'page' + (++count),
+export default template => Renderer => {
+  const count = ++counter
+  return template({
+    name: 'page' + (count),
     label: 'Default page' + count
   })({
     components: {
@@ -14,8 +15,10 @@ export default template => Renderer =>
     render () {
       return h('div', {}, [
           h(Renderer, { tag: "h3", children: [ "Insert title" ] }),
+          `This is template ${count} of ${counter}!`,
           h(Renderer, { tag: "div", children: this.data?.body }),
         ]
       )
     }
   })
+}

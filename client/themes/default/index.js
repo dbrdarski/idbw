@@ -4,5 +4,5 @@ import Page from "./templates/page.js"
 export default createTheme({
   name: "default",
   label: "Default theme",
-  templates: registerTemplates(Page, Page)
+  templates: registerTemplates(Page, Page, Page)
 })

@@ -13,13 +13,13 @@
     </template>
     <div class="row">
       <div class="content">
-        <div
+        <component :is="selectedTemplateComponent" :data="post.record" />
+        <!-- <div
           class="content"
           ref="contentEditor"
           contenteditable
         >
-          <component :is="selectedTemplateComponent" :data="post.record" />
-        </div>
+        </div> -->
       </div>
       <div class="sidebar">
         <q-list>
@@ -436,6 +436,14 @@ export default {
     }
   },
   computed: {
+    computedTitle: {
+      get () {
+        return this.post.record.header.title || "Insert title"
+      },
+      set (value) {
+        this.post.record.header.title = v
+      }
+    },
     selectedTemplateComponent () {
       return this.templates.components[this.post.record.options.template]
     },
@@ -538,11 +546,11 @@ export default {
     async publishPost () {
       // alert("Temporary disabled!")
       // return
-      const { children } = getVNodeTree(this.$refs.contentEditor)
+      // const { children } = getVNodeTree(this.$refs.contentEditor)
 
-      this.post.record.body = children
-      this.post.record.header.title = "Post title"
-      this.post.record.header.slug = "post-slug"
+      // this.post.record.body = children
+      // // this.post.record.header.title = "Post title"
+      // this.post.record.header.slug = "post-slug"
 
       const post = await (
         this.id ? this.updatePost() : this.createPost()
