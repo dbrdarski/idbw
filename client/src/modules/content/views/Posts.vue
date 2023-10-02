@@ -4,13 +4,18 @@
       <div class="page-title">{{ title }}</div>
       <div class="row q-py-md">
         <q-btn-group outline>
-          <q-btn label="All" outline color="blue-7" />
-          <q-separator />
-          <q-btn label="Active" outline color="blue-7" />
-          <q-separator />
-          <!-- <q-btn label="Drafts" outline color="blue-7" /> -->
-          <q-separator />
-          <q-btn label="Archived" outline color="blue-7" />
+          <template
+            v-for="(filterItem, filterKey) in filters"
+            :key="filterKey"
+          >
+            <q-separator v-if="filterKey !== Object.keys(filters)[0]" />
+            <q-btn
+              :label="filterItem.label"
+              :outline="filterKey !== filter"
+              color="blue-7"
+              @click="filter = filterKey"
+            />
+          </template>
         </q-btn-group>
         <q-space />
         <q-btn
@@ -32,7 +37,14 @@
       >
       <template v-slot:body-cell-actions="props">
         <q-td align="right">
-          <q-btn flat icon="inventory" round size="sm" color="grey-8" />
+          <q-btn
+            icon="inventory"
+            color="grey-8"
+            size="sm"
+            round
+            flat
+            @click="archivePost(props.row)"
+          />
           <q-btn
             icon="edit"
             color="grey-8"
@@ -60,6 +72,21 @@ const columns = [
   { name: "actions", label: "Actions",  field: "actions", align: "right" },
 ]
 
+const filters = {
+  all: {
+    label: "All",
+    filter: { archived: null }
+  },
+  active: {
+    label: "Active",
+    filter: { archived: false }
+  },
+  archived: {
+    label: "Archived",
+    filter: { archived: true }
+  }
+}
+
 export default {
   name: "PostsIndex",
   setup () {
@@ -71,6 +98,8 @@ export default {
   },
   data () {
     return {
+      filters,
+      filter: Object.keys(filters)[0],
       taxonomies: [],
       showDialog: false,
       editedItem: null,
@@ -95,13 +124,24 @@ export default {
           }
         )
     },
+    async archivePost (item) {
+      await contentApi.archiveEntry(this.type, item.document.id, this.filter !== 'archived')
+      await this.fetchEntries()
+    },
     async onReq ({ pagination }) {
       Object.assign(this.pagination, pagination)
       await this.fetchEntries({ pagination })
     },
     async fetchEntries ({ pagination = this.pagination } = {}) {
-      // const [ total, taxonomies ] = await contentApi.fetchEntries(this.type, getOffsetAndLimit(pagination))
-      const { meta: { total }, data: taxonomies, ...rest } = await contentApi.fetchEntries(this.type, getOffsetAndLimit(pagination))
+      const filter = filters[this.filter].filter
+      const {
+        meta: { total },
+        data: taxonomies,
+        ...rest
+      } = await contentApi.fetchEntries(this.type, {
+        ...getOffsetAndLimit(pagination),
+        filter
+      })
       console.log({ rest })
       this.pagination.rowsNumber = total
       this.taxonomies = taxonomies
@@ -114,6 +154,11 @@ export default {
         }) :
         contentApi.createEntry(this.type, data)
       await this.fetchEntries()
+    }
+  },
+  watch: {
+    filter () {
+      this.fetchEntries()
     }
   },
   mounted () {

@@ -11,11 +11,18 @@
       />
       <div class="row q-py-md">
         <q-btn-group outline>
-          <q-btn label="All" outline color="blue-7" />
-          <q-separator />
-          <q-btn label="Active" outline color="blue-7" />
-          <q-separator />
-          <q-btn label="Archived" outline color="blue-7" />
+          <template
+            v-for="(filterItem, filterKey) in filters"
+            :key="filterKey"
+          >
+            <q-separator v-if="filterKey !== Object.keys(filters)[0]" />
+            <q-btn
+              :label="filterItem.label"
+              :outline="filterKey !== filter"
+              color="blue-7"
+              @click="filter = filterKey"
+            />
+          </template>
         </q-btn-group>
         <q-space />
         <q-btn
@@ -37,7 +44,14 @@
       >
       <template v-slot:body-cell-actions="props">
         <q-td align="right">
-          <q-btn flat icon="inventory" round size="sm" color="grey-8" />
+          <q-btn
+            icon="inventory"
+            color="grey-8"
+            size="sm"
+            round
+            flat
+            @click="archiveTaxonomy(props.row)"
+          />
           <q-btn
             icon="edit"
             color="grey-8"
@@ -61,7 +75,7 @@ import TaxonomyDialog from "../dialogs/TaxonomyDialog.vue"
 import api from "/src/api/client.js"
 console.log(api)
 const { capitalize } = format
-const { taxonomy: taxonomyApi, entity: contentApi } = api
+const { taxonomy: taxonomyApi } = api
 
 const columns = [
   { name: "title", label: "Title", field: row => row.record.title, width: "40%", align: "left"  },
@@ -69,6 +83,21 @@ const columns = [
   { name: "slug", label: "Slug",  field: row => row.record.slug, align: "left"  },
   { name: "actions", label: "Actions",  field: "actions", align: "right" },
 ]
+
+const filters = {
+  all: {
+    label: "All",
+    filter: { archived: null }
+  },
+  active: {
+    label: "Active",
+    filter: { archived: false }
+  },
+  archived: {
+    label: "Archived",
+    filter: { archived: true }
+  }
+}
 
 export default {
   name: "TaxonomiesIndex",
@@ -90,6 +119,8 @@ export default {
   },
   data () {
     return {
+      filters,
+      filter: Object.keys(filters)[0],
       taxonomies: [],
       showDialog: false,
       editedItem: null,
@@ -115,9 +146,21 @@ export default {
       await this.fetchTaxonomies({ pagination })
     },
     async fetchTaxonomies ({ pagination = this.pagination } = {}) {
-      const { data: taxonomies, meta: { total } } = await taxonomyApi.fetchTaxonomies(this.type, getOffsetAndLimit(pagination))
+      const filter = filters[this.filter].filter
+      const {
+        data: taxonomies,
+        meta: { total }
+      } = await taxonomyApi.fetchTaxonomies(this.type, {
+        ...getOffsetAndLimit(pagination),
+        filter
+      })
       this.pagination.rowsNumber = total
       this.taxonomies = taxonomies
+    },
+    async archiveTaxonomy (item) {
+      console.log({ item })
+      await taxonomyApi.archiveTaxonomy(this.type, item.document.id, this.filter !== 'archived')
+      await this.fetchTaxonomies()
     },
     async saveTaxonomy (data) {
       await (
@@ -139,6 +182,11 @@ export default {
         }.`
       })
       await this.fetchTaxonomies()
+    }
+  },
+  watch: {
+    filter () {
+      this.fetchTaxonomies()
     }
   },
   mounted () {

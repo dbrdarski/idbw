@@ -330,8 +330,8 @@
                 dense
                 @update:model-value="updateTags"
                 @input-value="value => tagFilter = value"
-                @keyup.enter="createTag"
               >
+<!--                @keyup.enter="createTag"-->
                 <template v-slot:append v-if="tagFilter">
                   <q-icon
                     v-if="tagExactMatchAdded"
@@ -552,7 +552,7 @@ export default {
       // // this.post.record.header.title = "Post title"
       // this.post.record.header.slug = "post-slug"
 
-      const post = await (
+      const { data: post } = await (
         this.id ? this.updatePost() : this.createPost()
       )
       console.log({ post })
@@ -578,6 +578,7 @@ export default {
     },
     updateTags (tag) {
       if (tag) {
+        console.log({ tag })
         this.post.record.taxonomies.tags.push(tag.document.id)
       }
       this.$refs.tagFilter.updateInputValue("")
@@ -590,7 +591,7 @@ export default {
       this.fetchRevisions(this.id)
     },
     async fetchRevision (revisionId) {
-      const post = JSON.parse(
+      const { data: post } = JSON.parse(
         JSON.stringify(
           await contentApi.fetchRevision("post", revisionId)
         )
@@ -612,11 +613,12 @@ export default {
       this.tags = tags
     },
     async fetchPost (id) {
-      const post = JSON.parse(
+      const { data: post } = JSON.parse(
         JSON.stringify(
           await contentApi.fetchEntry("post", id)
         )
       )
+      console.log({ post })
       this.post = post
       this.renderPost()
     },
@@ -635,7 +637,7 @@ export default {
     async createTag (е) {
       const title = this.tagFilter
       if (!title || this.tagExactMatchAdded) return
-      const tag = await taxonomyApi.createTaxonomy("tag", { title, slug: "xxx" })
+      const { data: tag } = await taxonomyApi.createTaxonomy("tag", { title, slug: "xxx" })
       await this.fetchTags()
       this.updateTags(tag)
     }

@@ -1,8 +1,8 @@
-export function fetchEntries(type, { offset, limit, where } = {}) {
+export function fetchEntries(type, { offset, limit, where, filter } = {}) {
   return globalThis.$.query($ => {
-    console.log("Q", { $, type })
     return $[type]
-      .activeRevisions()
+      // .activeRevisions()
+      .latest(filter)
       // .get()
       // .lastest({ published: true })
       .find(where)
@@ -10,7 +10,7 @@ export function fetchEntries(type, { offset, limit, where } = {}) {
       .limit(limit)
       .meta({
         total: $[type]
-          .activeRevisions()
+          .latest(filter)
           .find(where)
           .count()
       })
@@ -27,28 +27,42 @@ export function createEntry(type, payload) {
 }
 
 export function updateEntry(type, { document: { id }, record, revision: { id: from } }) {
-  return globalThis.$.query($ => $[type].createRevision(id, record, from))
+  return globalThis.$.query($ => $[type].createRevision(id, record, { from }))
 }
 
 export function fetchEntry(type, id) {
-  return globalThis.$.query($ => $[type].getLatestRevision(id)) // this needs to be handled, does not return { data }
-  // .get({ id }).latest()
+  return globalThis.$.query($ =>
+    $[type]
+      .latest({ id })
+      .data()
+  )
+  // return globalThis.$.query($ => $[type].getLatestRevision(id)) // this needs to be handled, does not return { data }
 }
 
 export function fetchRevision(type, id) {
-  return globalThis.$.query($ => $[type].getRevision(id)) // .get({ id, revision: true })
+  return globalThis.$.query($ =>
+    $[type].revision({ id })
+      .data()
+  ) // .get({ id, revision: true })
 }
 
 export function fetchEntryRevisions(type, id) {
   return globalThis.$.query($ =>
     $[type]
-      .getRevisions(id)
+      .revisions({ id })
+      // .getRevisions(id)
       // .get({ id })
       // .all()
       .data(({ document, data, ...rest }) => rest)
   )
 }
 
+export function archiveEntry(type, id, archived) {
+  return globalThis.$.query($ =>
+    $[type]
+      .archive(id, archived)
+  )
+}
 // open questions:
 // Tightly coupled query where existing .data(). ids(), additionally meta() should be used to build the response
 // - OR -
