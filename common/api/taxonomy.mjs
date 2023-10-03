@@ -23,7 +23,11 @@ export function updateTaxonomy(type, { document: { id }, data, revision: { id: f
 }
 
 export function fetchTaxonomy(type, id) {
-  return globalThis.$.query($ => $[type].latest({ id }))
+  return globalThis.$.query($ =>
+    $[type]
+      .latest({ id })
+      .data()
+  )
 }
 
 export function archiveTaxonomy(type, id, archived) {

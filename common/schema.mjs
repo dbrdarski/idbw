@@ -1,4 +1,4 @@
-export default function schema () {
+export default function schema() {
   console.log("SCHEMA INIT!!!!!!!!!!!!!")
   class EntityHeader {
     title = String
@@ -24,14 +24,14 @@ export default function schema () {
     //     posts = Array(Post)
     //   }
     // },
-    num () {
+    num() {
       return class Num {
         x = Number
         y = Number
         z = Number
       }
     },
-    post ({ tag, category }) {
+    post({ tag, category }) {
       const Tag = this.belongsToMany({ tag })
       const Category = this.belongsToMany({ category })
       class Taxonomies {
@@ -45,27 +45,27 @@ export default function schema () {
         options = Object
       }
     },
-    page () {
+    page() {
       return class Page {
         header = EntityHeader
         body = Array(Vdom)
       }
     },
-    category ({ post }) {
+    category({ post }) {
       this.publish = true // TODO: this needs to be implemented
       this.hasMany({
         post
       }, "category")
       return EntityHeader
     },
-    tag ({ post }) {
+    tag({ post }) {
       this.publish = true
       this.hasMany({
         post
       }, "tag")
       return EntityHeader
     },
-    pageTree ({ page }) {
+    pageTree({ page }) {
       const Page = this.belongsToMany({ page })
       return class Route {
         page_id = Page

@@ -158,7 +158,6 @@ export default {
       this.taxonomies = taxonomies
     },
     async archiveTaxonomy (item) {
-      console.log({ item })
       await taxonomyApi.archiveTaxonomy(this.type, item.document.id, this.filter !== 'archived')
       await this.fetchTaxonomies()
     },
