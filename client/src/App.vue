@@ -4,7 +4,7 @@
 
 <script>
 import { defineComponent } from "vue"
-// import theme from "/themes/default"
+import theme from "/themes/default"
 
 export default defineComponent({
   name: "App",
