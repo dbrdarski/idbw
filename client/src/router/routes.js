@@ -1,7 +1,19 @@
-
+import { auth } from "src/stores/atoms/auth"
+import { PERMISSIONS } from "/../common/auth/permissions.mjs"
 const routes = [
   {
+    name: "login",
+    path: "/login",
+    beforeEnter(to, from, next) {
+      auth.isAuthenticated ? next(from) : next()
+    },
+    component: () => import("pages/Login.vue"),
+  },
+  {
     path: "/",
+    beforeEnter (to, from, next) {
+      auth.resumeSession(next)
+    },
     component: () => import("layouts/MainLayout.vue"),
     children: [
       {
@@ -40,8 +52,20 @@ const routes = [
         component: () => import("/src/modules/taxonomy/views/Taxonomies.vue")
       },
       {
+        name: "users",
+        path: "users",
+        beforeEnter (to, from, next) {
+          auth.isAdmin() ? next() : next(from ?? { name: "dashboard" })
+          // return auth.requirePermissions(
+          //   next,
+          //   PERMISSIONS.MANAGE_USERS
+          // ) || next(from ?? { name: "dashboard" })
+        },
+        component: () => import("/src/modules/users/views/Users.vue")
+      },
+      {
         name: "dashboard",
-        path: "dashboard",
+        path: "/",
         component: () => import("/src/pages/Dashboard.vue")
       }
     ]

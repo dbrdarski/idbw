@@ -53,7 +53,7 @@ export function fetchEntryRevisions(type, id) {
       // .getRevisions(id)
       // .get({ id })
       // .all()
-      .data(({ document, data, ...rest }) => rest)
+      .data(({ document, record, ...rest }) => rest)
   )
 }
 

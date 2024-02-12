@@ -69,6 +69,39 @@
            </q-item-label>
          </q-item-section>
         </q-item>
+        <q-item class="q-pa-none" v-if="isAdmin">
+          <q-item-section>
+            <q-item-label class="menu-item group-title">Admin</q-item-label>
+          </q-item-section>
+        </q-item>
+        <q-item v-if="isAdmin">
+          <q-item-section>
+            <q-item-label class="menu-item">
+              <router-link to="/users">
+                Users
+              </router-link>
+            </q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
+      <q-list style="background: #fff2">
+        <q-item>
+          <q-section avatar class="q-pr-md">
+            <q-avatar color="deep-purple-5" text-color="white" size="md">
+              <span class="text-caption">DB</span>
+            </q-avatar>
+          </q-section>
+          <q-item-section class="text-white">
+            <q-item-label>{{ user.name }}</q-item-label>
+            <q-item-label
+              caption
+              class="cursor-pointer"
+              @click="logout"
+            >
+              Log out
+            </q-item-label>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
     <q-page-container>
@@ -80,12 +113,14 @@
 <script>
 import { defineComponent } from 'vue'
 import { layout } from "/src/common/helpers.js"
+import { auth } from "src/stores/atoms/auth"
 
 export default defineComponent({
   name: 'MainLayout',
   data () {
+    const { user } = auth
     return {
-      leftDrawerOpen: false
+      user
     }
   },
   setup () {
@@ -93,9 +128,15 @@ export default defineComponent({
       layout
     }
   },
+  computed: {
+    isAdmin () {
+      return auth.isAdmin()
+    },
+  },
   methods: {
-    toggleLeftDrawer () {
-      this.leftDrawerOpen = !this.leftDrawerOpen
+    async logout () {
+      await auth.logout()
+      this.$router.replace({ name: "login" })
     }
   },
   mounted () {

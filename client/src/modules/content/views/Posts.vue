@@ -29,7 +29,7 @@
       </div>
       <q-table
         :columns="columns"
-        :rows="taxonomies"
+        :rows="entries"
         v-model:pagination="pagination"
         no-shadow
         align="left"
@@ -100,7 +100,7 @@ export default {
     return {
       filters,
       filter: Object.keys(filters)[0],
-      taxonomies: [],
+      entries: [],
       showDialog: false,
       editedItem: null,
       pagination: {
@@ -136,7 +136,7 @@ export default {
       const filter = filters[this.filter].filter
       const {
         meta: { total },
-        data: taxonomies,
+        data: entries,
         ...rest
       } = await contentApi.fetchEntries(this.type, {
         ...getOffsetAndLimit(pagination),
@@ -144,7 +144,7 @@ export default {
       })
       console.log({ rest })
       this.pagination.rowsNumber = total
-      this.taxonomies = taxonomies
+      this.entries = entries
     },
     async saveEntry (data) {
       await this.editedItem ?
