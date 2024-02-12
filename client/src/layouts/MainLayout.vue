@@ -86,11 +86,11 @@
       </q-list>
       <q-list style="background: #fff2">
         <q-item>
-          <q-section avatar class="q-pr-md">
+          <q-item-section avatar class="q-pr-md">
             <q-avatar color="deep-purple-5" text-color="white" size="md">
               <span class="text-caption">DB</span>
             </q-avatar>
-          </q-section>
+          </q-item-section>
           <q-item-section class="text-white">
             <q-item-label>{{ user.name }}</q-item-label>
             <q-item-label
