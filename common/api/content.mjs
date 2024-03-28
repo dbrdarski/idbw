@@ -1,8 +1,16 @@
+export function testRelationships(rel, ...ids) {
+  return globalThis.$.query(
+    $ => $.post.testRelationships(rel, ...ids)
+  )
+}
+
 export function fetchEntries(type, { offset, limit, where, filter } = {}) {
-  return globalThis.$.query($ => {
-    return $[type]
-      // .activeRevisions()
+  return globalThis.$.query(
+    $ => $[type]
       .latest(filter)
+      // .latest({
+      //   rel: post => post.tag.name(1,2,3,4)
+      // })
       // .get()
       // .lastest({ published: true })
       .find(where)
@@ -19,7 +27,7 @@ export function fetchEntries(type, { offset, limit, where, filter } = {}) {
         post.category
       ))
       .data()
-  })
+  )
 }
 
 export function createEntry(type, payload) {
@@ -50,9 +58,6 @@ export function fetchEntryRevisions(type, id) {
   return globalThis.$.query($ =>
     $[type]
       .revisions({ id })
-      // .getRevisions(id)
-      // .get({ id })
-      // .all()
       .data(({ document, record, ...rest }) => rest)
   )
 }

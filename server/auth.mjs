@@ -8,7 +8,7 @@ const byUser = {}
 
 const generateSessionToken = (cookie) => {
   const token = crypto.randomUUID()
-  return byToken.hasOwnProperty(token+cookie)
+  return byToken.hasOwnProperty(token + cookie)
     ? generateSessionToken(cookie)
     : token
 }
@@ -17,14 +17,14 @@ export default {
   endSession(user) {
     const session = byUser[user.username]
     if (session) {
-      delete byToken[session.token+session.cookie]
+      delete byToken[session.token + session.cookie]
       delete byUser[user.username]
     }
   },
   generateSession(user, duration, cookie) {
     this.endSession(user)
     const token = generateSessionToken(cookie)
-    byToken[token+cookie] = byUser[user.username] = {
+    byToken[token + cookie] = byUser[user.username] = {
       cookie,
       token,
       user,
@@ -33,7 +33,7 @@ export default {
     return token
   },
   resumeSession({ cookie, token }) {
-    const { user } = byToken[token+cookie] ?? {}
+    const { user } = byToken[token + cookie] ?? {}
     return {
       user,
       token,
@@ -48,7 +48,7 @@ export default {
     throw Error(err)
   },
   login({ cookie, username, password }) {
-    console.log({ cookie, username, password })
+    // console.log({ cookie, username, password })
     const hash = this.generatePasswordHash(password)
     return globalThis.$.query($ =>
       $.user
